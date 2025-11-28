@@ -1,0 +1,28 @@
+{
+  "name": "dmf-music-platform",
+  "version": "1.0.0",
+  "description": "DMF-MUSIC-PLATFORM powered by Da'Riyah — an AI-driven record label OS with 500 specialized music-industry bots",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend/firebase/functions",
+    "backend/supabase/functions"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm run start --workspace=frontend",
+    "lint": "npm run lint --workspace=frontend",
+    "firebase:deploy": "npm run deploy --workspace=backend/firebase/functions",
+    "supabase:deploy": "npm run deploy --workspace=backend/supabase/functions"
+  },
+  "keywords": [
+    "music-platform",
+    "ai",
+    "record-label",
+    "dariyah",
+    "bots"
+  ],
+  "author": "DMF Music",
+  "license": "GPL-3.0"
+}
