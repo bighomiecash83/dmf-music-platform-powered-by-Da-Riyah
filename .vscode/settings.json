@@ -1,0 +1,9 @@
+{
+  "remote.portsAttributes": {
+    "33418": {
+      "protocol": "https",
+      "urlTemplate": "https://vscode.dev/redirect?port=${port}",
+      "onAutoForward": "openBrowser"
+    }
+  }
+}
