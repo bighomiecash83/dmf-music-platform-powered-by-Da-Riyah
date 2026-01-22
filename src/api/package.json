@@ -1,1 +1,12 @@
-{\n  "name": "dmf-api",\n  "version": "1.0.0",\n  "private": true,\n  "main": "server.js",\n  "scripts": {\n    "start": "node server.js"\n  },\n  "dependencies": {\n    "express": "^4.19.2"\n  }\n}
+{
+  "name": "dmf-api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
