@@ -18,3 +18,15 @@ services:
       - "3000:3000"
     env_file:
       - .env
+  api:
+    build: ./src/api
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+  payment-service:
+    build: ./services/payment-service
+    ports:
+      - "8081:8080"
+    env_file:
+      - .env

@@ -6,9 +6,11 @@ app = FastAPI(title="Da'Riyah Core")
 
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev_admin_token")
 
+
 class ApiKeyRequest(BaseModel):
     name: str
     scopes: list[str]
+
 
 @app.post("/admin/api-keys")
 def create_api_key(request: ApiKeyRequest, x_admin_token: str = None):
@@ -16,6 +18,7 @@ def create_api_key(request: ApiKeyRequest, x_admin_token: str = None):
         raise HTTPException(status_code=401, detail="Unauthorized")
     # Stub: In real implementation, generate and store API key
     return {"api_key": "dgk_example_key_id_raw_key_material"}
+
 
 @app.get("/")
 def root():
