@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from pydantic import BaseModel
 import os
 
@@ -13,7 +13,7 @@ class ApiKeyRequest(BaseModel):
 
 
 @app.post("/admin/api-keys")
-def create_api_key(request: ApiKeyRequest, x_admin_token: str = None):
+def create_api_key(request: ApiKeyRequest, x_admin_token: str = Header(None, alias='X-Admin-Token')):
     if x_admin_token != ADMIN_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
     # Stub: In real implementation, generate and store API key
