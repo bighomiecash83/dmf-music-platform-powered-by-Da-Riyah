@@ -13,7 +13,7 @@ class ApiKeyRequest(BaseModel):
 
 
 @app.post("/admin/api-keys")
-def create_api_key(request: ApiKeyRequest, x_admin_token: str = Header(None)):
+def create_api_key(request: ApiKeyRequest, x_admin_token: str = Header(None, alias='X-Admin-Token')):
     if x_admin_token != ADMIN_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
     # Stub: In real implementation, generate and store API key
