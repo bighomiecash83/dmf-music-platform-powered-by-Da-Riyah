@@ -11,3 +11,5 @@ dependencies:
     - python-dotenv
     - pydantic
     - cryptography
+    - pytest
+    - httpx
