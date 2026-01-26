@@ -1,7 +1,13 @@
-FROM node:16
+FROM python:3.12-slim
+
 WORKDIR /app
-COPY package.json .
-RUN npm install
-COPY . .
+
+COPY libs/security /app/libs/security
+COPY services/streamgod-presenceos /app/services/streamgod-presenceos
+
+RUN pip install --no-cache-dir fastapi uvicorn sqlalchemy psycopg[binary] pydantic
+
+ENV PYTHONPATH=/app
+
 EXPOSE 8002
-CMD ["node", "server.js"]
+CMD ["python", "-m", "services.streamgod-presenceos.app"]
