@@ -1,0 +1,9 @@
+[project]
+name = "dmf-security"
+version = "0.1.0"
+dependencies = [
+  "fastapi>=0.110",
+  "pydantic>=2.6",
+  "sqlalchemy>=2.0",
+  "psycopg[binary]>=3.1",
+]

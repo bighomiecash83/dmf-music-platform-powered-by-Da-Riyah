@@ -1,20 +1,43 @@
 version: '3.8'
+
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: dmf
+      POSTGRES_USER: dmf
+      POSTGRES_PASSWORD: dmf
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dmf -d dmf"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   dariyah-core:
-    build: ./services/dariyah-core
+    build:
+      context: .
+      dockerfile: services/dariyah-core/Dockerfile
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8001:8001"
-    env_file:
-      - .env
+
   streamgod-presenceos:
-    build: ./services/streamgod-presenceos
+    build:
+      context: .
+      dockerfile: services/streamgod-presenceos/Dockerfile
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8002:8002"
-    env_file:
-      - .env
-  frontend:
-    build: ./apps/frontend
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
+
+volumes:
+  pgdata:

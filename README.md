@@ -28,6 +28,14 @@
 2) Start:
    - `docker compose up --build`
 
+3) Create admin key:
+```bash
+curl -s -X POST http://localhost:8001/admin/api-keys \
+  -H "X-Admin-Token: dev_admin_token" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"local-dev","scopes":["campaigns:read","campaigns:write","runtime:exec"]}'
+```
+
 ## API Wall (Client Requirements)
 Every request must include:
 - `X-Api-Key`: `dgk_<key_id>_<raw_key_material>`

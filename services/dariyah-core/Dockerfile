@@ -1,12 +1,13 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY libs/security /app/libs/security
+COPY services/dariyah-core /app/services/dariyah-core
 
-COPY . .
+RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --no-cache-dir fastapi uvicorn sqlalchemy psycopg[binary] pydantic
+
+ENV PYTHONPATH=/app
 
 EXPOSE 8001
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "services.dariyah-core.app:app", "--host", "0.0.0.0", "--port", "8001"]
