@@ -28,6 +28,11 @@
 2) Start:
    - `docker compose up --build`
 
+## VS Code web redirect
+- When running in vscode.dev or a browser-based editor, open forwarded services with `https://vscode.dev/redirect?port=33418` instead of `http://127.0.0.1:33418` so the port is reachable.
+- Desktop VS Code can keep using `http://127.0.0.1:33418` when developing locally.
+- The `.vscode/settings.json` port configuration is tuned for browser-based sessions; adjust if your environment needs a different URL scheme.
+
 ## API Wall (Client Requirements)
 Every request must include:
 - `X-Api-Key`: `dgk_<key_id>_<raw_key_material>`
