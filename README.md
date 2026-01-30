@@ -19,6 +19,8 @@
 ## Services
 - `services/dariyah-core`: Da'Riyah Core (Strategy/Music/Video/Distribution/Learning/Build stubs)
 - `services/streamgod-presenceos`: StreamGod (PresenceOS) (campaign exec/bot runtime/live DSP stubs)
+- `src/api`: DMF API service
+- `services/payment-service`: DMF Payment service
 - `libs/security`: API Wall (API key hashing, signature verification, replay guard, scope enforcement)
 
 ## Quickstart (Docker)
@@ -27,6 +29,8 @@
 
 2) Start:
    - `docker compose up --build`
+
+Note: the frontend scaffold lives in `apps/frontend`. If you only need the backend services, you can remove or comment out the `frontend` service in `docker-compose.yml`.
 
 ## API Wall (Client Requirements)
 Every request must include:
