@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  dariyah-core:
+    build: ./services/dariyah-core
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+  streamgod-presenceos:
+    build: ./services/streamgod-presenceos
+    ports:
+      - "8002:8002"
+    env_file:
+      - .env
+  frontend:
+    build: ./apps/frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
