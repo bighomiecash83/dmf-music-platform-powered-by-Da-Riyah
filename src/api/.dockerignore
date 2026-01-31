@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
+Dockerfile
+.dockerignore
+.git
+.github
+.env
+.env.*
+dist
+build
+.coverage
+coverage
+.next
+out
+*.md
