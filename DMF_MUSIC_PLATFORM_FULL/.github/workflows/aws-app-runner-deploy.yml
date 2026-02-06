@@ -1,0 +1,47 @@
+name: Deploy to AWS App Runner
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build & Deploy DaRiyah Platform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Build DaRiyah frontend
+        run: pnpm --filter @dariyah/web build
+
+      - name: Push to App Runner
+        uses: awslabs/amazon-app-runner-deploy@main
+        with:
+          service_arn: ${{ secrets.AWS_APP_RUNNER_SERVICE_ARN }}
+          source-directory: "frontend"
+          runtime: "NODEJS_20"
+          build-command: "pnpm install && pnpm build"
+          start-command: "pnpm start"

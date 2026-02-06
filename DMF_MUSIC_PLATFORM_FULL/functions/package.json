@@ -2,17 +2,23 @@
   "dependencies": {
     "@google-cloud/kms": "4.5.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^5.1.0",
     "firebase-admin": "12.5.0",
     "firebase-functions": "6.0.0",
     "mongodb": "5.7.0",
     "openai": "4.58.1"
   },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  },
   "private": true,
   "scripts": {
     "build": "tsc",
     "serve": "firebase emulators:start",
-    "deploy": "firebase deploy --only functions"
+    "deploy": "firebase deploy --only functions",
+    "dev": "node server.js"
   },
   "engines": {
     "node": "20"

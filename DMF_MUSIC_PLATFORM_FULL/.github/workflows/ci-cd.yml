@@ -1,5 +1,10 @@
 name: DMF CI/CD
-on: [ push ]
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -9,13 +14,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install frontend deps
-        run: |
-          cd frontend
-          npm ci
-          npm run build
+          cache: pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build web
+        run: pnpm build:web
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
       - name: Build functions
-        run: |
-          cd functions
-          npm ci
-          npm run build || true
+        run: npm run build --prefix functions

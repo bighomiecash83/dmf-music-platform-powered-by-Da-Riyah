@@ -6,6 +6,8 @@
     "up:backend": "node functions/server.js",
     "up:web": "pnpm --filter @dariyah/web dev",
     "build:web": "pnpm --filter @dariyah/web build",
+    "build:functions": "npm ci --prefix functions && npm run build --prefix functions",
+    "build": "pnpm build:web && pnpm build:functions",
     "start:web": "pnpm --filter @dariyah/web start",
     "verify": "node scripts/verify.mjs",
     "down": "node -e \"process.exit(0)\""

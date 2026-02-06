@@ -1,0 +1,17 @@
+# Local workspace artifacts
+node_modules/
+frontend/.next/
+frontend/node_modules/
+functions/node_modules/
+
+# Env files
+.env
+.env.local
+.env.*.local
+frontend/.env.local
+functions/.env
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
