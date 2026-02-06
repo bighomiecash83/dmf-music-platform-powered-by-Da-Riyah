@@ -1,0 +1,24 @@
+{
+  "name": "dmf-music-platform",
+  "private": true,
+  "scripts": {
+    "up": "node scripts/up.mjs",
+    "up:backend": "node functions/server.js",
+    "up:web": "pnpm --filter @dariyah/web dev",
+    "build:web": "pnpm --filter @dariyah/web build",
+    "start:web": "pnpm --filter @dariyah/web start",
+    "verify": "node scripts/verify.mjs",
+    "down": "node -e \"process.exit(0)\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-polly": "^3.975.0",
+    "@google/generative-ai": "^0.10.0",
+    "@types/node": "^25.2.0",
+    "openai": "^4.104.0",
+    "vitest": "^4.0.18"
+  }
+}
