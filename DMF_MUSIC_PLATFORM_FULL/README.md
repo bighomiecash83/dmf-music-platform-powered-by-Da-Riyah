@@ -5,6 +5,7 @@ DMF RECORDS / FLY HOOLIE ENT command center powered by Next.js + Supabase.
 ## Runtime
 
 - Node.js `20.x` (recommended for CI, Vercel, and functions)
+- `.nvmrc` is set to `20` (`nvm use`)
 
 ## Core Notes
 
@@ -39,6 +40,31 @@ Optional web API proxy vars (required only if using `/api/proxy` and `/api/dariy
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `GOOGLE_AI_API_KEY`
+
+## Rollout Gate (Required Before Deploy)
+
+Run a full production smoke check:
+
+- `pnpm rollout`
+
+What this does:
+
+- Builds web + functions
+- Starts backend on `http://localhost:5001`
+- Starts production web server on `http://localhost:3000`
+- Verifies backend health and web response (`scripts/verify.mjs`)
+
+If you need to run smoke check only (without rebuilding), use:
+
+- `pnpm rollout:check`
+- `pnpm security:audit` (high/critical gate using `security/audit-allowlist.json`)
+
+Optional overrides:
+
+- `ROLLOUT_BACKEND` (default `http://localhost:5001`)
+- `ROLLOUT_WEB` (default `http://localhost:3000`)
+- `ROLLOUT_WEB_PATH` (default `/dashboard`)
+- `ROLLOUT_TIMEOUT_MS` (default `90000`)
 
 ## Launch (Local Production Mode)
 

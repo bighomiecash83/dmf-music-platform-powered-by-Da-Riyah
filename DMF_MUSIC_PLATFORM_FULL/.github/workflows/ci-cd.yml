@@ -27,3 +27,10 @@ jobs:
         run: npm ci --prefix functions
       - name: Build functions
         run: npm run build --prefix functions
+      - name: Security audit gate (high+)
+        run: pnpm security:audit
+      - name: Rollout smoke check
+        env:
+          ROLLOUT_WEB: http://localhost:3100
+          ROLLOUT_BACKEND: http://localhost:5101
+        run: pnpm rollout:check

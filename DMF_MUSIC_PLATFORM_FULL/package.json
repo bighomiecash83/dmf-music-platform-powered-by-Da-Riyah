@@ -10,6 +10,9 @@
     "build": "pnpm build:web && pnpm build:functions",
     "start:web": "pnpm --filter @dariyah/web start",
     "verify": "node scripts/verify.mjs",
+    "security:audit": "node scripts/audit-gate.mjs",
+    "rollout:check": "node scripts/rollout-check.mjs",
+    "rollout": "pnpm build && pnpm rollout:check",
     "down": "node -e \"process.exit(0)\""
   },
   "devDependencies": {
@@ -17,9 +20,9 @@
     "wait-on": "^7.2.0"
   },
   "dependencies": {
-    "@aws-sdk/client-polly": "^3.975.0",
+    "@aws-sdk/client-polly": "^3.984.0",
     "@google/generative-ai": "^0.10.0",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.1",
     "openai": "^4.104.0",
     "vitest": "^4.0.18"
   }

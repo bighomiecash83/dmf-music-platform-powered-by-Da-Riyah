@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "projects": {
+    "frontend": [
+      {
+        "package": "next",
+        "maxSeverity": "critical",
+        "expiresOn": "2026-04-30",
+        "reason": "Temporary until Next.js is upgraded to a patched release and regression-tested."
+      },
+      {
+        "package": "axios",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Temporary allowlist while upgrading axios to latest non-vulnerable patch."
+      },
+      {
+        "package": "fast-xml-parser",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitively required by AWS SDK chain; pending dependency refresh."
+      },
+      {
+        "package": "@aws-sdk/xml-builder",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitively required by AWS SDK chain; pending dependency refresh."
+      }
+    ],
+    "functions": [
+      {
+        "package": "body-parser",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitive through firebase-functions; pending upstream patch adoption."
+      },
+      {
+        "package": "express",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitive through firebase-functions; pending upstream patch adoption."
+      },
+      {
+        "package": "jws",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitive jwt chain exposure; pending dependency updates."
+      },
+      {
+        "package": "node-forge",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitive dependency; pending patched upstream pull-in."
+      },
+      {
+        "package": "qs",
+        "maxSeverity": "high",
+        "expiresOn": "2026-04-30",
+        "reason": "Transitive through firebase-functions/express chain."
+      }
+    ]
+  }
+}
