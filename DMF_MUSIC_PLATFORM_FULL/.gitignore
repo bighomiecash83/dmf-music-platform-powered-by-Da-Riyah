@@ -1,5 +1,6 @@
 # Local workspace artifacts
 node_modules/
+.pnpm-store/
 frontend/.next/
 frontend/node_modules/
 functions/node_modules/
