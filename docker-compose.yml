@@ -1,20 +1,133 @@
 version: '3.8'
+
+# ---------------------------------------------------------------------------
+# DMF Music Platform — Local Cloud Simulator
+# Services: api | web | postgres | redis | worker
+# ---------------------------------------------------------------------------
+
 services:
+
+  # ── Infrastructure ────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-dmf}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dmfpass}
+      POSTGRES_DB: ${DB_NAME:-dmf}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dmf}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── API (dariyah-core) ────────────────────────────────────────────────────
+
   dariyah-core:
     build: ./services/dariyah-core
+    restart: unless-stopped
     ports:
       - "8001:8001"
     env_file:
       - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${DB_USER:-dmf}:${DB_PASSWORD:-dmfpass}@postgres:5432/${DB_NAME:-dmf}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Background Worker (Celery) ────────────────────────────────────────────
+
+  worker:
+    build: ./services/dariyah-core
+    restart: unless-stopped
+    command: celery -A app.workers.dsp_sync_worker.celery_app worker
+      --loglevel=info
+      --concurrency=4
+      --queues=dsp,royalty,ai
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${DB_USER:-dmf}:${DB_PASSWORD:-dmfpass}@postgres:5432/${DB_NAME:-dmf}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Celery Beat Scheduler ─────────────────────────────────────────────────
+
+  beat:
+    build: ./services/dariyah-core
+    restart: unless-stopped
+    command: celery -A app.workers.dsp_sync_worker.celery_app beat --loglevel=info
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${DB_USER:-dmf}:${DB_PASSWORD:-dmfpass}@postgres:5432/${DB_NAME:-dmf}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      - redis
+
+  # ── StreamGod PresenceOS ──────────────────────────────────────────────────
+
   streamgod-presenceos:
     build: ./services/streamgod-presenceos
+    restart: unless-stopped
     ports:
       - "8002:8002"
     env_file:
       - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      - redis
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+
   frontend:
     build: ./apps/frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
       - .env
+    depends_on:
+      - dariyah-core
+
+volumes:
+  postgres_data:
+  redis_data:
