@@ -42,6 +42,27 @@ celery_app.conf.update(
 )
 
 # ---------------------------------------------------------------------------
+# Celery Beat — periodic task schedule
+# ---------------------------------------------------------------------------
+
+celery_app.conf.beat_schedule = {
+    # Pull DSP metrics for every org every 6 hours
+    "dsp-bulk-sync-every-6h": {
+        "task": "workers.dsp_sync.bulk_sync_org",
+        "schedule": 6 * 3600,  # 6 hours in seconds
+        "args": ("__all__", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
+        "options": {"queue": "dsp"},
+    },
+    # Nightly royalty settlement batch at 02:00 UTC
+    "royalty-nightly-batch": {
+        "task": "workers.royalty.batch_settle_org",
+        "schedule": 24 * 3600,  # daily
+        "args": ("__all__", "", ""),  # org_id, period_start, period_end filled by task
+        "options": {"queue": "royalty"},
+    },
+}
+
+# ---------------------------------------------------------------------------
 # DSP adapter stubs — replace with real SDK calls (spotipy, apple-music-api…)
 # ---------------------------------------------------------------------------
 
