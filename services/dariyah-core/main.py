@@ -14,6 +14,23 @@ try:
 except ImportError:
     _GOOGLE_GENAI_AVAILABLE = False
 
+try:
+    import anthropic as _anthropic_sdk
+    _ANTHROPIC_AVAILABLE = True
+except ImportError:
+    _ANTHROPIC_AVAILABLE = False
+
+# ── Supported models catalogue ─────────────────────────────────────────────────
+CLAUDE_MODELS = {
+    "claude-opus-4-6":   {"label": "Claude Opus 4.6",   "provider": "anthropic"},
+    "claude-sonnet-4-6": {"label": "Claude Sonnet 4.6", "provider": "anthropic"},
+    "claude-haiku-4-5":  {"label": "Claude Haiku 4.5",  "provider": "anthropic"},
+}
+GEMINI_MODELS = {
+    "gemini-2.0-flash":  {"label": "Gemini 2.0 Flash",  "provider": "google"},
+}
+ALL_MODELS = {**CLAUDE_MODELS, **GEMINI_MODELS}
+
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestIDMiddleware, TimingMiddleware, TenantMiddleware
 from app.core.security import generate_api_key, hash_api_key
@@ -563,23 +580,79 @@ class ChatMessage(BaseModel):
 class DaRiyahChatRequest(BaseModel):
     message: str
     history: list[ChatMessage] = []
+    model: str = "claude-opus-4-6"  # default: best Claude model
+
+
+@app.get("/dariyah/models")
+async def dariyah_models():
+    """Return available models with their availability status."""
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    google_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
+
+    result = []
+    for model_id, info in ALL_MODELS.items():
+        available = (
+            (info["provider"] == "anthropic" and bool(anthropic_key) and _ANTHROPIC_AVAILABLE)
+            or (info["provider"] == "google" and bool(google_key) and _GOOGLE_GENAI_AVAILABLE)
+            or True  # always show, standalone fallback handles missing keys
+        )
+        result.append({
+            "id": model_id,
+            "label": info["label"],
+            "provider": info["provider"],
+            "requires_key": (
+                "ANTHROPIC_API_KEY" if info["provider"] == "anthropic" else "GOOGLE_AI_API_KEY"
+            ),
+            "key_set": (
+                bool(anthropic_key) if info["provider"] == "anthropic" else bool(google_key)
+            ),
+        })
+    return result
 
 
 @app.post("/dariyah/chat")
 async def dariyah_chat(req: DaRiyahChatRequest):
     """
-    Da'Riyah conversational AI.
-    Uses Google Gemini if GOOGLE_AI_API_KEY is set, otherwise falls back
-    to a smart standalone response so the UI always works.
+    Da'Riyah conversational AI — all Claude models + Gemini.
+    Priority: Claude (ANTHROPIC_API_KEY) > Gemini (GOOGLE_AI_API_KEY) > standalone fallback.
     """
+    model_id = req.model if req.model in ALL_MODELS else "claude-opus-4-6"
+    provider = ALL_MODELS[model_id]["provider"]
+
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     google_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
 
-    # ── Gemini path ───────────────────────────────────────────────────────────
+    # ── Anthropic / Claude path ───────────────────────────────────────────────
+    if provider == "anthropic" and anthropic_key and _ANTHROPIC_AVAILABLE:
+        try:
+            client = _anthropic_sdk.Anthropic(api_key=anthropic_key)
+
+            history = []
+            for msg in req.history:
+                history.append({"role": msg.role, "content": msg.content})
+
+            response = client.messages.create(
+                model=model_id,
+                max_tokens=4096,
+                system=DARIYAH_SYSTEM_PROMPT,
+                messages=history + [{"role": "user", "content": req.message}],
+            )
+            return {
+                "response": next(
+                    (b.text for b in response.content if b.type == "text"), ""
+                ),
+                "model": model_id,
+                "provider": "anthropic",
+            }
+        except Exception as e:
+            logger.warning("Anthropic call failed, trying fallback", error=str(e))
+
+    # ── Google Gemini path ────────────────────────────────────────────────────
     if google_key and _GOOGLE_GENAI_AVAILABLE:
         try:
-            client = google_genai.Client(api_key=google_key)
+            gemini_client = google_genai.Client(api_key=google_key)
+            gemini_model = model_id if provider == "google" else "gemini-2.0-flash"
 
-            # Build conversation history for Gemini
             history = []
             for msg in req.history:
                 history.append({
@@ -587,9 +660,8 @@ async def dariyah_chat(req: DaRiyahChatRequest):
                     "parts": [{"text": msg.content}],
                 })
 
-            # Gemini 2.0 Flash — fast, cheap, capable
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
+            resp = gemini_client.models.generate_content(
+                model=gemini_model,
                 contents=history + [{"role": "user", "parts": [{"text": req.message}]}],
                 config={
                     "system_instruction": DARIYAH_SYSTEM_PROMPT,
@@ -598,8 +670,9 @@ async def dariyah_chat(req: DaRiyahChatRequest):
                 },
             )
             return {
-                "response": response.text,
-                "model": "gemini-2.0-flash",
+                "response": resp.text,
+                "model": gemini_model,
+                "provider": "google",
             }
         except Exception as e:
             logger.warning("Gemini call failed, falling back to standalone", error=str(e))
