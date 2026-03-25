@@ -10,7 +10,7 @@ async function fetchDashboardStats() {
 }
 
 export default function DashboardPage() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['dashboard', 'stats'],
     queryFn: fetchDashboardStats,
     staleTime: 5 * 60 * 1000,

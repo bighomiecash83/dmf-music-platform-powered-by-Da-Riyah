@@ -1,0 +1,12 @@
+# Railway — Celery worker
+# Deploy this as a separate Railway service pointing to the same repo.
+# Set ROOT_DIR = services/dariyah-core
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r requirements.txt"
+
+[deploy]
+startCommand = "celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5

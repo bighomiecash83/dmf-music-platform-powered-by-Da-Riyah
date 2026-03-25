@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { apiClient } from '@/shared/api/client'
-import LoadingSpinner from '@/shared/ui/LoadingSpinner'
 import ErrorBanner from '@/shared/ui/ErrorBanner'
 import { Sparkles } from 'lucide-react'
 
