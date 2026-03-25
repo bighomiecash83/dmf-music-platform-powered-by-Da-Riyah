@@ -109,7 +109,6 @@ services:
     restart: unless-stopped
     command: celery -A app.workers.dsp_sync_worker.celery_app flower
       --port=5555
-      --broker_api=redis://redis:6379/1
     ports:
       - "5555:5555"
     environment:
