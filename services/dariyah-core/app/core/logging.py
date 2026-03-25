@@ -16,7 +16,8 @@ request_org_id: ContextVar[str] = ContextVar("org_id", default="")
 
 
 def add_request_context(logger, method, event_dict):  # noqa: ARG001
-    event_dict["trace_id"] = request_trace_id.get() or str(uuid.uuid4())
+    trace = request_trace_id.get()
+    event_dict["trace_id"] = trace if trace else str(uuid.uuid4())
     org = request_org_id.get()
     if org:
         event_dict["org_id"] = org
@@ -28,42 +29,28 @@ def configure_logging(log_level: str = "INFO", service_name: str = "dariyah-core
     Configure structlog for JSON output in production, pretty-print in dev.
     Call once at application startup.
     """
+    level = getattr(logging, log_level.upper(), logging.INFO)
+
     shared_processors = [
         structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
+        structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         add_request_context,
         structlog.processors.StackInfoRenderer(),
     ]
 
-    is_prod = sys.stdout.isatty() is False
-
-    if is_prod:
-        processors = shared_processors + [
-            structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
-        ]
-    else:
-        processors = shared_processors + [
-            structlog.dev.ConsoleRenderer(),
-        ]
-
     structlog.configure(
-        processors=processors,
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(logging, log_level.upper(), logging.INFO)
-        ),
+        processors=shared_processors + [structlog.processors.JSONRenderer()],
+        wrapper_class=structlog.make_filtering_bound_logger(level),
         context_class=dict,
         logger_factory=structlog.PrintLoggerFactory(),
         cache_logger_on_first_use=True,
     )
 
-    # Also configure stdlib logging to route through structlog
     logging.basicConfig(
         format="%(message)s",
         stream=sys.stdout,
-        level=getattr(logging, log_level.upper(), logging.INFO),
+        level=level,
     )
 
 

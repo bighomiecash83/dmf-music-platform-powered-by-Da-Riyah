@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 /**
  * Axios API client — all requests go through here.
  * Automatically injects API key and handles 401 redirects.
