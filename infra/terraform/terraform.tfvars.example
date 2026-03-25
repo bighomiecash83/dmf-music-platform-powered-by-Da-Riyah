@@ -1,0 +1,33 @@
+# ─── Copy to terraform.tfvars and fill in — NEVER commit the real file ────────
+# Add terraform.tfvars to .gitignore
+
+aws_region     = "us-east-2"
+environment    = "prod"
+aws_account_id = "041875151338"
+
+# Network
+vpc_cidr           = "10.0.0.0/16"
+availability_zones = ["us-east-2a", "us-east-2b", "us-east-2c"]
+
+# Compute (Fargate)
+api_cpu              = 512
+api_memory           = 1024
+api_desired_count    = 2
+worker_desired_count = 1
+
+# Database
+db_instance_class    = "db.t4g.micro"
+db_allocated_storage = 20
+db_name              = "dmf"
+db_username          = "dmf_admin"
+
+# Redis
+redis_node_type = "cache.t4g.micro"
+
+# Secrets — set via environment variables, NOT here:
+#   export TF_VAR_admin_token="..."
+#   export TF_VAR_secret_key="..."
+#   export TF_VAR_anthropic_api_key="..."
+admin_token       = ""
+secret_key        = ""
+anthropic_api_key = ""

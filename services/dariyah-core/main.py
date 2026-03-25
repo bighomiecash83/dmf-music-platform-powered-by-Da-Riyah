@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import random
+import httpx
+import base64
 from datetime import date, timedelta
 
 from app.core.logging import configure_logging, get_logger
@@ -41,28 +43,119 @@ ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev_admin_token")
 # Live seed data — artists, releases, campaigns (in-memory for standalone mode)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# REAL DMF RECORDS FLY HOOLIE ENT ROSTER — Columbus, Ohio (West Side)
+# ═══════════════════════════════════════════════════════════════════════════════
+
 ARTISTS = [
-    {"id": "a1", "name": "Da'Riyah", "genre": "R&B / Soul", "image_url": None, "spotify_artist_id": None, "bio": "Visionary artist and founder of DMF."},
-    {"id": "a2", "name": "KashFlow", "genre": "Hip-Hop", "image_url": None, "spotify_artist_id": None, "bio": "Underground king turned mainstream force."},
-    {"id": "a3", "name": "Velvet Haze", "genre": "Alternative R&B", "image_url": None, "spotify_artist_id": None, "bio": "Blending genres, breaking boundaries."},
-    {"id": "a4", "name": "NightOwl", "genre": "Trap / Electronic", "image_url": None, "spotify_artist_id": None, "bio": "Late-night vibes, heavy bass."},
-    {"id": "a5", "name": "SoulPhonic", "genre": "Neo-Soul", "image_url": None, "spotify_artist_id": None, "bio": "Where old-school soul meets new-wave production."},
+    {
+        "id": "a1",
+        "name": "Big Homie Cash",
+        "real_name": "Deangelo Jackson",
+        "role": "Label Owner / Founder / Lead Artist",
+        "genre": "Hip-Hop / Rap / Street Rap",
+        "location": "Columbus, Ohio (West Side)",
+        "vibe": "Raw street hustle, motivational anthems, loyalty, trap-influenced beats",
+        "spotify_artist_id": "40z5aBKSs2Wtdori0baO1l",
+        "spotify_url": "https://open.spotify.com/artist/40z5aBKSs2Wtdori0baO1l",
+        "image_url": None,
+        "key_collabs": ["Freezzo", "Go Savage", "B Hus from da bus", "Yogi Bear"],
+        "bio": "Yes my name is Deangelo Jackson – artist out of Columbus Ohio who also owns DMF RECORDS FLY HOOLIE ENT. Building the movement from the West Side.",
+    },
+    {
+        "id": "a2",
+        "name": "Freezzo",
+        "real_name": None,
+        "role": "Core Artist / High-Output Collaborator",
+        "genre": "Hip-Hop / Rap",
+        "location": "Columbus, Ohio (West Side)",
+        "vibe": "Hard-hitting no-filter bars, trap bangers, some R&B/soul leans, street energy",
+        "spotify_artist_id": "4ksrusI7XnIdyuN6a3LtMj",
+        "spotify_url": "https://open.spotify.com/artist/4ksrusI7XnIdyuN6a3LtMj",
+        "image_url": None,
+        "key_collabs": ["Big Homie Cash", "B Hus", "Chef Lo"],
+        "bio": "Hot artist out of the west side of Columbus Ohio – locked in with DMF. DMF's workhorse: consistent drops, loyal to the label, bringing that raw Columbus street sound.",
+    },
+    {
+        "id": "a3",
+        "name": "OBMB DELO",
+        "real_name": None,
+        "role": "Alternative Rap Specialist",
+        "genre": "Hip-Hop / Rap / Alternative Rap",
+        "location": "Columbus, Ohio",
+        "vibe": "Introspective storytelling, unique flows, emotional street depth, alternative edge",
+        "spotify_artist_id": "6yjdymBNWSyr39uuuweOfT",
+        "spotify_url": "https://open.spotify.com/artist/6yjdymBNWSyr39uuuweOfT",
+        "image_url": None,
+        "key_collabs": ["Big Homie Cash"],
+        "bio": "Bringing that alternative edge to Columbus rap – deep cuts and real talk. Alternative rap standout bringing something different to the roster.",
+    },
+    {
+        "id": "a4",
+        "name": "Go Savage",
+        "real_name": None,
+        "role": "Street Rap / Energy Artist",
+        "genre": "Hip-Hop / Rap / Trap",
+        "location": "Columbus, Ohio",
+        "vibe": "Gritty, aggressive trap/street anthems, savage delivery, high-energy, no-holds-barred",
+        "spotify_artist_id": "5qGClg4MZsh2r5ZD88rtEZ",
+        "spotify_url": "https://open.spotify.com/artist/5qGClg4MZsh2r5ZD88rtEZ",
+        "image_url": None,
+        "key_collabs": ["Ellumf", "Big Homie Cash"],
+        "bio": "Young upcoming artist out of Columbus Ohio with something to prove – only hard hits. Aggressive and unapologetic – perfect for high-energy playlists and street anthems.",
+    },
+    {
+        "id": "a5",
+        "name": "Ellumf",
+        "real_name": None,
+        "role": "Versatile / Experimental Artist",
+        "genre": "Hip-Hop / Rap (Experimental)",
+        "location": "Columbus, Ohio",
+        "vibe": "Confident bars + unique fusions (Indian elements, genre experiments), versatile delivery",
+        "spotify_artist_id": None,
+        "spotify_url": None,
+        "image_url": None,
+        "key_collabs": ["Go Savage"],
+        "bio": "Versatile sound from Columbus – straight bars to unique fusions. Adds variety to the roster – capable of straight rap or branching into fresh sounds.",
+    },
 ]
 
+# ─── Real catalog from Big Homie Cash inventory export ───────────────────────
+
 RELEASES = [
-    {"id": "r1", "title": "Empire State of Mind", "release_type": "album", "genre": "R&B", "release_date": "2026-03-01", "status": "live", "artist_name": "Da'Riyah", "cover_art_url": None},
-    {"id": "r2", "title": "Midnight Run", "release_type": "single", "genre": "Hip-Hop", "release_date": "2026-03-15", "status": "live", "artist_name": "KashFlow", "cover_art_url": None},
-    {"id": "r3", "title": "Purple Frequencies", "release_type": "ep", "genre": "Alt R&B", "release_date": "2026-02-14", "status": "live", "artist_name": "Velvet Haze", "cover_art_url": None},
-    {"id": "r4", "title": "3AM Sessions", "release_type": "single", "genre": "Trap", "release_date": "2026-03-20", "status": "submitted", "artist_name": "NightOwl", "cover_art_url": None},
-    {"id": "r5", "title": "Golden Hour", "release_type": "album", "genre": "Neo-Soul", "release_date": None, "status": "draft", "artist_name": "SoulPhonic", "cover_art_url": None},
-    {"id": "r6", "title": "Drip Season 4", "release_type": "album", "genre": "Hip-Hop", "release_date": "2026-01-10", "status": "live", "artist_name": "KashFlow", "cover_art_url": None},
+    # Big Homie Cash
+    {"id": "r1", "title": "Fresh off the banana boat", "release_type": "album", "genre": "Hip-Hop/Rap", "release_date": "2024-01-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r2", "title": "Stick to the money", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-03-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r3", "title": "The Rise", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-04-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r4", "title": "Flavors", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-05-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r5", "title": "Light It Up (feat. Freezzo & B Hus)", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-06-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r6", "title": "Tatted Up (feat. Freezzo, Yogi Bear, B Hustle)", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-07-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    {"id": "r7", "title": "Never Faking", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2023-06-01", "status": "live", "artist_name": "Big Homie Cash", "cover_art_url": None},
+    # Freezzo
+    {"id": "r8", "title": "Calling my cellular", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-02-01", "status": "live", "artist_name": "Freezzo", "cover_art_url": None},
+    {"id": "r9", "title": "All in a Lexus", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-03-15", "status": "live", "artist_name": "Freezzo", "cover_art_url": None},
+    {"id": "r10", "title": "I Do My Thang (feat. Big Homie Cash)", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-04-01", "status": "live", "artist_name": "Freezzo", "cover_art_url": None},
+    {"id": "r11", "title": "IDGAF", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-05-01", "status": "live", "artist_name": "Freezzo", "cover_art_url": None},
+    {"id": "r12", "title": "Da Boss", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-06-01", "status": "live", "artist_name": "Freezzo", "cover_art_url": None},
+    # OBMB DELO
+    {"id": "r13", "title": "Standing on my own 10", "release_type": "ep", "genre": "Alternative Rap", "release_date": "2024-01-01", "status": "live", "artist_name": "OBMB DELO", "cover_art_url": None},
+    {"id": "r14", "title": "Know who you are", "release_type": "single", "genre": "Alternative Rap", "release_date": "2024-06-01", "status": "live", "artist_name": "OBMB DELO", "cover_art_url": None},
+    {"id": "r15", "title": "13 reasons", "release_type": "single", "genre": "Alternative Rap", "release_date": "2024-08-01", "status": "live", "artist_name": "OBMB DELO", "cover_art_url": None},
+    # Go Savage
+    {"id": "r16", "title": "No hook", "release_type": "ep", "genre": "Hip-Hop/Rap", "release_date": "2024-03-01", "status": "live", "artist_name": "Go Savage", "cover_art_url": None},
+    {"id": "r17", "title": "Pistol on da dresser (feat. Ellumf)", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-01-01", "status": "live", "artist_name": "Go Savage", "cover_art_url": None},
+    # Ellumf
+    {"id": "r18", "title": "Is what it is", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-04-01", "status": "live", "artist_name": "Ellumf", "cover_art_url": None},
+    {"id": "r19", "title": "Shots Fire", "release_type": "single", "genre": "Hip-Hop/Rap", "release_date": "2024-05-01", "status": "live", "artist_name": "Ellumf", "cover_art_url": None},
+    {"id": "r20", "title": "October 3", "release_type": "single", "genre": "Experimental/Indian Fusion", "release_date": "2024-10-03", "status": "live", "artist_name": "Ellumf", "cover_art_url": None},
 ]
 
 CAMPAIGNS = [
-    {"id": "c1", "name": "Empire Launch Blitz", "campaign_type": "release_promo", "status": "active", "artist_name": "Da'Riyah", "start_date": "2026-03-01", "end_date": "2026-04-01", "budget_usd": 5000},
-    {"id": "c2", "name": "Midnight Run Push", "campaign_type": "single_promo", "status": "active", "artist_name": "KashFlow", "start_date": "2026-03-15", "end_date": "2026-04-15", "budget_usd": 2500},
-    {"id": "c3", "name": "Purple Frequencies Playlist", "campaign_type": "playlist_pitch", "status": "completed", "artist_name": "Velvet Haze", "start_date": "2026-02-01", "end_date": "2026-03-01", "budget_usd": 1500},
-    {"id": "c4", "name": "NightOwl TikTok Wave", "campaign_type": "social_media", "status": "draft", "artist_name": "NightOwl", "start_date": None, "end_date": None, "budget_usd": 3000},
+    {"id": "c1", "name": "Fresh Off The Banana Boat Blitz", "campaign_type": "release_promo", "status": "completed", "artist_name": "Big Homie Cash", "start_date": "2024-01-01", "end_date": "2024-03-01", "budget_usd": 500},
+    {"id": "c2", "name": "Freezzo — IDGAF Playlist Push", "campaign_type": "playlist_pitch", "status": "active", "artist_name": "Freezzo", "start_date": "2026-03-01", "end_date": "2026-04-15", "budget_usd": 300},
+    {"id": "c3", "name": "OBMB DELO — EP Deep Cut Promo", "campaign_type": "social_media", "status": "active", "artist_name": "OBMB DELO", "start_date": "2026-02-15", "end_date": "2026-04-01", "budget_usd": 200},
+    {"id": "c4", "name": "Go Savage TikTok Street Clip", "campaign_type": "social_media", "status": "draft", "artist_name": "Go Savage", "start_date": None, "end_date": None, "budget_usd": 250},
+    {"id": "c5", "name": "Big Homie Cash 2026 Spring Push", "campaign_type": "release_promo", "status": "active", "artist_name": "Big Homie Cash", "start_date": "2026-03-15", "end_date": "2026-05-01", "budget_usd": 750},
 ]
 
 # Generate realistic stream trend data
@@ -189,6 +282,177 @@ def list_campaigns():
 @app.get("/analytics/stream-trend")
 def stream_trend():
     return STREAM_TREND
+
+
+# ── DSP Metrics (Spotify) ─────────────────────────────────────────────────────
+
+# In-memory Spotify token cache
+_spotify_token_cache: dict = {"token": None, "expires_at": 0}
+
+async def _get_spotify_token() -> Optional[str]:
+    """Obtain Spotify client-credentials token. Cached until expiry."""
+    import time
+    client_id = os.getenv("SPOTIFY_CLIENT_ID")
+    client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        return None
+    if _spotify_token_cache["token"] and time.time() < _spotify_token_cache["expires_at"]:
+        return _spotify_token_cache["token"]
+    creds = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            "https://accounts.spotify.com/api/token",
+            headers={"Authorization": f"Basic {creds}", "Content-Type": "application/x-www-form-urlencoded"},
+            data="grant_type=client_credentials",
+            timeout=10.0,
+        )
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        _spotify_token_cache["token"] = data["access_token"]
+        _spotify_token_cache["expires_at"] = time.time() + data["expires_in"] - 60
+        return data["access_token"]
+
+
+@app.get("/dsp/spotify/{spotify_artist_id}")
+async def get_spotify_artist(spotify_artist_id: str):
+    """
+    Fetch live Spotify artist data (followers, popularity, genres, top tracks).
+    Falls back to cached seed data if no Spotify credentials are configured.
+    """
+    token = await _get_spotify_token()
+    if not token:
+        # No credentials — return known seed data for the real roster
+        seed = {
+            "40z5aBKSs2Wtdori0baO1l": {"name": "Big Homie Cash", "followers": 42, "popularity": 18},
+            "4ksrusI7XnIdyuN6a3LtMj": {"name": "Freezzo", "followers": 31, "popularity": 15},
+            "6yjdymBNWSyr39uuuweOfT": {"name": "OBMB DELO", "followers": 8, "popularity": 6},
+            "5qGClg4MZsh2r5ZD88rtEZ": {"name": "Go Savage", "followers": 19, "popularity": 9},
+        }
+        if spotify_artist_id in seed:
+            d = seed[spotify_artist_id]
+            return {
+                "id": spotify_artist_id,
+                "name": d["name"],
+                "followers": d["followers"],
+                "popularity": d["popularity"],
+                "source": "seed_data",
+                "note": "Set SPOTIFY_CLIENT_ID + SPOTIFY_CLIENT_SECRET env vars for live data.",
+            }
+        raise HTTPException(status_code=404, detail="Artist not found in seed data")
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"https://api.spotify.com/v1/artists/{spotify_artist_id}",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10.0,
+        )
+        if resp.status_code == 404:
+            raise HTTPException(status_code=404, detail="Spotify artist not found")
+        if resp.status_code != 200:
+            raise HTTPException(status_code=502, detail=f"Spotify API error: {resp.status_code}")
+        data = resp.json()
+        return {
+            "id": data["id"],
+            "name": data["name"],
+            "followers": data["followers"]["total"],
+            "popularity": data["popularity"],
+            "genres": data.get("genres", []),
+            "spotify_url": data["external_urls"]["spotify"],
+            "image_url": data["images"][0]["url"] if data.get("images") else None,
+            "source": "spotify_live",
+        }
+
+
+@app.get("/dsp/roster-metrics")
+async def roster_metrics():
+    """Aggregate Spotify metrics for all DMF roster artists that have Spotify IDs."""
+    results = []
+    for artist in ARTISTS:
+        sid = artist.get("spotify_artist_id")
+        if not sid:
+            results.append({
+                "artist_id": artist["id"],
+                "name": artist["name"],
+                "spotify_artist_id": None,
+                "followers": None,
+                "popularity": None,
+                "source": "no_spotify_id",
+            })
+            continue
+        try:
+            data = await get_spotify_artist(sid)
+            results.append({
+                "artist_id": artist["id"],
+                "name": artist["name"],
+                "spotify_artist_id": sid,
+                "followers": data.get("followers"),
+                "popularity": data.get("popularity"),
+                "source": data.get("source"),
+            })
+        except Exception as e:
+            results.append({
+                "artist_id": artist["id"],
+                "name": artist["name"],
+                "spotify_artist_id": sid,
+                "error": str(e),
+            })
+    return results
+
+
+# ── Royalty Calculator ─────────────────────────────────────────────────────────
+
+class RoyaltyCalcRequest(BaseModel):
+    streams_spotify: int = 0
+    streams_apple: int = 0
+    streams_youtube: int = 0
+    streams_amazon: int = 0
+    streams_tidal: int = 0
+    label_split_pct: float = 0.85  # artist keeps 85%
+
+@app.post("/royalties/calculate")
+def calculate_royalties(req: RoyaltyCalcRequest):
+    """
+    Royalty calculator using 2026 average per-stream rates.
+    Rates (USD per stream, gross — before splits):
+      Spotify  ~$0.004  | Apple Music ~$0.010
+      YouTube  ~$0.0008 | Amazon      ~$0.004
+      Tidal    ~$0.013
+    """
+    rates = {
+        "spotify": 0.004,
+        "apple":   0.010,
+        "youtube": 0.0008,
+        "amazon":  0.004,
+        "tidal":   0.013,
+    }
+    breakdown = {}
+    total_gross = 0.0
+    for platform, streams in [
+        ("spotify", req.streams_spotify),
+        ("apple", req.streams_apple),
+        ("youtube", req.streams_youtube),
+        ("amazon", req.streams_amazon),
+        ("tidal", req.streams_tidal),
+    ]:
+        gross = round(streams * rates[platform], 2)
+        artist_net = round(gross * req.label_split_pct, 2)
+        breakdown[platform] = {
+            "streams": streams,
+            "rate_per_stream": rates[platform],
+            "gross_usd": gross,
+            "artist_net_usd": artist_net,
+        }
+        total_gross += gross
+
+    total_net = round(total_gross * req.label_split_pct, 2)
+    return {
+        "total_gross_usd": round(total_gross, 2),
+        "total_artist_net_usd": total_net,
+        "label_split_pct": req.label_split_pct,
+        "platform_breakdown": breakdown,
+        "rates_source": "2026 average industry estimates",
+    }
 
 
 # ── AI Tools ─────────────────────────────────────────────────────────────────
