@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
-  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles,
+  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles, MessageSquare,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -12,6 +12,7 @@ import RoyaltiesPage from '@/features/royalties/RoyaltiesPage'
 import CampaignsPage from '@/features/campaigns/CampaignsPage'
 import AnalyticsPage from '@/features/analytics/AnalyticsPage'
 import AIPage from '@/features/ai/AIPage'
+import DaRiyahPage from '@/features/dariyah/DaRiyahPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,7 +22,7 @@ const queryClient = new QueryClient({
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/artists', label: 'Artists', icon: Users },
+  { to: '/artists', label: 'Roster', icon: Users },
   { to: '/releases', label: 'Releases', icon: Music },
   { to: '/royalties', label: 'Royalties', icon: DollarSign },
   { to: '/campaigns', label: 'Campaigns', icon: Radio },
@@ -34,6 +35,7 @@ function Sidebar() {
     <aside className="w-60 shrink-0 bg-gray-900 min-h-screen flex flex-col">
       <div className="px-6 py-5 border-b border-gray-800">
         <span className="text-white font-bold text-lg tracking-tight">DMF Platform</span>
+        <p className="text-gray-500 text-xs mt-0.5">Fly Hoolie Ent · Columbus</p>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -54,6 +56,25 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Da'Riyah chat CTA */}
+      <div className="px-3 pb-3">
+        <NavLink
+          to="/dariyah"
+          className={({ isActive }) =>
+            clsx(
+              'flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold transition-all w-full',
+              isActive
+                ? 'bg-indigo-600 text-white'
+                : 'bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white border border-indigo-500/30'
+            )
+          }
+        >
+          <MessageSquare size={18} />
+          Chat with Da'Riyah
+        </NavLink>
+      </div>
+
       <div className="px-6 py-4 border-t border-gray-800">
         <p className="text-xs text-gray-500">Powered by Da'Riyah</p>
       </div>
@@ -77,6 +98,7 @@ export default function App() {
               <Route path="/campaigns" element={<CampaignsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/ai" element={<AIPage />} />
+              <Route path="/dariyah" element={<DaRiyahPage />} />
             </Routes>
           </main>
         </div>

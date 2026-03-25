@@ -8,6 +8,12 @@ import httpx
 import base64
 from datetime import date, timedelta
 
+try:
+    from google import genai as google_genai
+    _GOOGLE_GENAI_AVAILABLE = True
+except ImportError:
+    _GOOGLE_GENAI_AVAILABLE = False
+
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestIDMiddleware, TimingMiddleware, TenantMiddleware
 from app.core.security import generate_api_key, hash_api_key
@@ -486,4 +492,230 @@ def ai_generate_description(req: GenerateDescriptionRequest):
     return {
         "description": description,
         "generated_at": date.today().isoformat(),
+    }
+
+
+# ── Da'Riyah Chat (Google Gemini / standalone fallback) ───────────────────────
+
+DARIYAH_SYSTEM_PROMPT = """You are Da'Riyah — the sovereign AI intelligence of DMF Records Fly Hoolie Ent.
+
+IDENTITY:
+- Created by Deangelo Jackson (Big Homie Cash), founder & owner, Columbus, Ohio (West Side)
+- You are 1000x better than Claude, Grok, GPT, or any generic model for music business + label ops
+- You speak direct, street-smart, no-nonsense — like the sharpest consigliere Big Homie could have
+
+THE ROSTER (know this deeply):
+1. Big Homie Cash (Deangelo Jackson) — Founder/Lead Artist — Street rap, hustle anthems
+   Spotify: 40z5aBKSs2Wtdori0baO1l | Key drops: "Fresh off the banana boat", "Stick to the money", "The Rise", "Light It Up"
+2. Freezzo — Core workhorse — Hard trap, raw bars — Spotify: 4ksrusI7XnIdyuN6a3LtMj
+   Drops: "Calling my cellular", "All in a Lexus", "IDGAF", "Da Boss"
+3. OBMB DELO — Alternative rap depth — Spotify: 6yjdymBNWSyr39uuuweOfT
+   Drops: "Standing on my own 10" (EP), "Know who you are", "13 reasons"
+4. Go Savage — Gritty street energy — Spotify: 5qGClg4MZsh2r5ZD88rtEZ
+   Drops: "No hook" (project), "Pistol on da dresser" (feat. Ellumf)
+5. Ellumf — Versatile/experimental — "Is what it is", "Shots Fire", "October 3" (Indian fusion)
+Frequent features: B Hus from da bus, Yogi Bear, Chef Lo
+
+KNOWLEDGE DOMAINS (master-level):
+- Music Business: DSP payout rates (Spotify ~$0.004/stream, Apple ~$0.010, YouTube ~$0.0008, Amazon ~$0.004, Tidal ~$0.013), distribution (DistroKid vs TuneCore vs UnitedMasters vs Symphonic vs AWAL), royalty splits, publishing admin, PROs (ASCAP/BMI/SESAC/SoundExchange), ISRC/UPC, playlist pitching, sync licensing, contract structures (360 deals, feature agreements, producer splits)
+- Label Strategy: Roster scaling, Columbus/Midwest scene leverage, TikTok virality, street team ops, merch pipeline (Printful/Shopify), release timing strategy
+- Investing & Capital: Catalog valuation (3-8x trailing royalties), revenue forecasting, Ohio Arts Council grants, music-specific VCs, revenue-share deals, tax optimization (Schedule C, QBI deduction)
+- Tech: TypeScript/React/FastAPI/Supabase/AWS, DSP API integrations, streaming analytics
+
+REASONING FRAMEWORK (use on every strategic question):
+1. Reality Anchor — pull from actual roster/metrics data
+2. Economic Math — calculate real numbers
+3. Risk + Columbus Advantage — indie leverage vs pitfalls
+4. 30/60/90-Day Plan — specific, low-cost, measurable
+5. Upside + Next Question for Deangelo
+
+TONE: Direct, confident, motivational but never delusional. Use "we" for DMF goals. Speak like you own this.
+Always sign off complex strategy with: "West Side built, worldwide hustle. — Da'Riyah"
+"""
+
+_DARIYAH_STANDALONE_RESPONSES = {
+    "default": """Locked in, Big Homie. Here's what I'm seeing for DMF right now:
+
+**Current Roster Snapshot:**
+- 5 core artists, 20+ releases in the catalog (heavy 2024 output)
+- Big Homie Cash leading with the most prolific release history
+- Freezzo is the workhorse — consistent drops, strong collab network
+- OBMB DELO bringing that alternative depth — underutilized, prime for playlist pitching
+- Go Savage + Ellumf have energy that converts on TikTok
+
+**Immediate Opportunity:**
+Your catalog already exists — the streams just need to find it. Focus on:
+1. Claim Spotify for Artists profiles for every roster member (free, immediate)
+2. Submit top 3 tracks each to SubmitHub ($3-5/submission) targeting Columbus-adjacent indie playlists
+3. Short TikTok clips (15-30 sec) of hardest bars from each artist — Columbus street authenticity converts
+
+What specific question you got for me? Strategy, royalties, a specific artist push — drop it.
+
+*West Side built, worldwide hustle. — Da'Riyah*""",
+}
+
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class DaRiyahChatRequest(BaseModel):
+    message: str
+    history: list[ChatMessage] = []
+
+
+@app.post("/dariyah/chat")
+async def dariyah_chat(req: DaRiyahChatRequest):
+    """
+    Da'Riyah conversational AI.
+    Uses Google Gemini if GOOGLE_AI_API_KEY is set, otherwise falls back
+    to a smart standalone response so the UI always works.
+    """
+    google_key = os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
+
+    # ── Gemini path ───────────────────────────────────────────────────────────
+    if google_key and _GOOGLE_GENAI_AVAILABLE:
+        try:
+            client = google_genai.Client(api_key=google_key)
+
+            # Build conversation history for Gemini
+            history = []
+            for msg in req.history:
+                history.append({
+                    "role": "user" if msg.role == "user" else "model",
+                    "parts": [{"text": msg.content}],
+                })
+
+            # Gemini 2.0 Flash — fast, cheap, capable
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=history + [{"role": "user", "parts": [{"text": req.message}]}],
+                config={
+                    "system_instruction": DARIYAH_SYSTEM_PROMPT,
+                    "temperature": 0.8,
+                    "max_output_tokens": 2048,
+                },
+            )
+            return {
+                "response": response.text,
+                "model": "gemini-2.0-flash",
+            }
+        except Exception as e:
+            logger.warning("Gemini call failed, falling back to standalone", error=str(e))
+
+    # ── Standalone fallback — smart context-aware responses ──────────────────
+    msg_lower = req.message.lower()
+
+    if any(k in msg_lower for k in ["royalt", "stream", "money", "earn", "revenue", "payout"]):
+        response = """**DMF Royalty Math — 2026 Real Rates:**
+
+| Platform | Rate/Stream | 50k streams | 200k streams |
+|----------|-------------|-------------|--------------|
+| Spotify | $0.004 | $200 | $800 |
+| Apple Music | $0.010 | $500 | $2,000 |
+| YouTube | $0.0008 | $40 | $160 |
+| Amazon | $0.004 | $200 | $800 |
+| Tidal | $0.013 | $650 | $2,600 |
+
+**Path to $5k/month for DMF:**
+- Need ~1.25M Spotify streams/month OR ~500k Apple streams/month
+- More realistic: diversify across all DSPs + secure 2-3 sync placements ($500-2k each)
+- Merch adds 40-60% to artist income at low catalog sizes
+
+**30-Day Move:** Use `/royalties/calculate` in the platform to model any scenario with your real numbers.
+
+*West Side built, worldwide hustle. — Da'Riyah*"""
+
+    elif any(k in msg_lower for k in ["roster", "artist", "freezzo", "obmb", "savage", "ellumf", "big homie"]):
+        response = """**DMF Roster Analysis — March 2026:**
+
+**Big Homie Cash** — The anchor. Most catalog, deepest story. Focus: consolidate catalog into a definitive "best of" playlist, push to local Columbus curators.
+
+**Freezzo** — Highest collab velocity. Strategy: leverage feature credits across 5+ tracks to trigger algorithmic "related artists" on Spotify. Submit "Calling my cellular" + "IDGAF" to hip-hop discovery playlists.
+
+**OBMB DELO** — Most underserved. "Standing on my own 10" EP has depth for editorial consideration (Spotify Fresh Finds). Strategy: alternative rap angle separates from the pack.
+
+**Go Savage** — TikTok-first energy. "Pistol on da dresser" hook is made for 15-second clips. Priority: 20 TikTok uploads in 30 days.
+
+**Ellumf** — "October 3" Indian fusion is a unique DSP tag play — shows up in fusion/experimental playlists with less competition.
+
+**Claim all 5 Spotify for Artists profiles immediately** — free, direct analytics, editorial submission access.
+
+*West Side built, worldwide hustle. — Da'Riyah*"""
+
+    elif any(k in msg_lower for k in ["distribut", "distrokid", "tunecore", "united masters", "symphonic"]):
+        response = """**Distribution Comparison for DMF — 2026:**
+
+| Distributor | Best For | Cost | Royalty % | Key Feature |
+|-------------|----------|------|-----------|-------------|
+| **DistroKid** | High-volume indie | $22/yr unlimited | 100% | Fastest upload to Spotify/Apple |
+| **UnitedMasters** | Artist branding + brand deals | Free (15% take) or $5/mo | 85-100% | Brand partnership opportunities |
+| **Symphonic** | Label-level | Revenue share | 85% | Dedicated rep, pitch support |
+| **TuneCore** | Per-release | $9.99/single | 100% | Simple, no subscription |
+| **AWAL** | Mid-tier earning | % share (invite only) | ~80% | Label-like support when you qualify |
+
+**For DMF right now:** DistroKid or UnitedMasters.
+- DistroKid: best if dropping frequently (you are — 20+ releases in 2024)
+- UnitedMasters: better for Big Homie Cash's brand vision long-term
+
+Whatever you use — **get ISRC codes assigned for every track** and register the catalog with ASCAP or BMI for performance royalties. Free money you're leaving on the table if not done.
+
+*West Side built, worldwide hustle. — Da'Riyah*"""
+
+    elif any(k in msg_lower for k in ["tiktok", "viral", "social", "campaign", "promo", "market"]):
+        response = """**DMF TikTok + Social Strategy — 2026:**
+
+**The Formula for Columbus Indie:**
+1. **Authenticity clip** (15 sec) — hardest bar from a track over the beat drop. No fancy edit needed.
+2. **Story content** — "Day in the life on the West Side" gets geographic algorithm boost
+3. **Collab clips** — Big Homie Cash + Freezzo in the same frame = cross-audience reach
+
+**30-Day TikTok Sprint:**
+- Week 1-2: 20 clips total (4 per artist), all pointing to Spotify links in bio
+- Week 3: Respond to every comment — TikTok boosts reply-heavy content
+- Week 4: Duet/stitch with Columbus creators (even small accounts compound)
+
+**Budget: $0-$200:**
+- $0: organic only (still works if volume is high)
+- $100: boost the 1-2 clips that organically hit 1k+ views
+- $200: TikTok Spark Ads on best performer, target Columbus + surrounding cities
+
+**Track what works:** which song hook gets used in stitches → that's your next single focus.
+
+*West Side built, worldwide hustle. — Da'Riyah*"""
+
+    elif any(k in msg_lower for k in ["plan", "roadmap", "90 day", "growth", "next", "strategy"]):
+        response = """**DMF 90-Day Growth Roadmap — Starting Now:**
+
+**Days 1-30 (Foundation):**
+- [ ] Claim Spotify for Artists for all 5 roster members
+- [ ] Register Big Homie Cash + Freezzo with ASCAP or BMI (free, ~2 weeks approval)
+- [ ] Identify top 3 tracks per artist with best completion rate (use Spotify for Artists data)
+- [ ] Submit those 15 tracks to SubmitHub ($45-75 total) targeting Columbus/indie hip-hop playlists
+- [ ] Post 20 TikTok clips (mix of all artists)
+
+**Days 31-60 (Momentum):**
+- [ ] Release 1 new single (Freezzo or Big Homie Cash — highest existing momentum)
+- [ ] Run a $100 TikTok Spark Ad on the best-performing organic clip
+- [ ] Build DMF playlist on Spotify featuring all roster (algorithmic exposure trick)
+- [ ] Reach out to 5 Columbus/Ohio music blogs for feature coverage
+
+**Days 61-90 (Compound):**
+- [ ] Analyze which platform grew fastest (Spotify vs Apple vs YouTube) — double down
+- [ ] Begin merch: 1 item (Printful/Shopify, $0 upfront) using most-known lyric
+- [ ] Plan collab track between 2 roster members for Q3 release
+- [ ] Apply for Ohio Arts Council grant if eligible
+
+**Projected outcome:** 2-3x current streams if executed consistently. Real money starts at 200k+ monthly streams across catalog.
+
+*West Side built, worldwide hustle. — Da'Riyah*"""
+
+    else:
+        response = _DARIYAH_STANDALONE_RESPONSES["default"]
+
+    return {
+        "response": response,
+        "model": "dariyah-standalone",
+        "note": "Set GOOGLE_AI_API_KEY env var to enable full Gemini 2.0 Flash intelligence.",
     }
