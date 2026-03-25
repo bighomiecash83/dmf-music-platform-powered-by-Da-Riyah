@@ -160,10 +160,18 @@ def calculate_release_royalties(
     name="workers.royalty.batch_settle_org",
     queue="royalty",
 )
-def batch_settle_org(org_id: str, period_start: str, period_end: str) -> dict:
+def batch_settle_org(org_id: str, period_start: str | None = None, period_end: str | None = None) -> dict:
     """
     Dispatch royalty calculations for all releases in an org.
+    Defaults to the previous full day (yesterday 00:00 → today 00:00 UTC)
+    when called from Celery Beat without explicit dates.
     """
+    if not period_start or not period_end:
+        from datetime import timedelta
+        today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        yesterday = today - timedelta(days=1)
+        period_start = period_start or yesterday.strftime("%Y-%m-%d")
+        period_end = period_end or today.strftime("%Y-%m-%d")
     # TODO: query DB for org releases, dispatch per-release tasks
-    logger.info("Batch royalty settlement dispatched", extra={"org_id": org_id})
+    logger.info("Batch royalty settlement dispatched", extra={"org_id": org_id, "period": f"{period_start} → {period_end}"})
     return {"status": "dispatched", "org_id": org_id, "period_start": period_start, "period_end": period_end}
