@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
-  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles,
+  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles, Zap,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -12,6 +12,7 @@ import RoyaltiesPage from '@/features/royalties/RoyaltiesPage'
 import CampaignsPage from '@/features/campaigns/CampaignsPage'
 import AnalyticsPage from '@/features/analytics/AnalyticsPage'
 import AIPage from '@/features/ai/AIPage'
+import DistributionPage from '@/features/distribution/DistributionPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { to: '/royalties', label: 'Royalties', icon: DollarSign },
   { to: '/campaigns', label: 'Campaigns', icon: Radio },
   { to: '/analytics', label: 'Analytics', icon: BarChart2 },
+  { to: '/distribution', label: 'Distribution', icon: Zap },
   { to: '/ai', label: 'AI Tools', icon: Sparkles },
 ]
 
@@ -76,6 +78,7 @@ export default function App() {
               <Route path="/royalties" element={<RoyaltiesPage />} />
               <Route path="/campaigns" element={<CampaignsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/distribution" element={<DistributionPage />} />
               <Route path="/ai" element={<AIPage />} />
             </Routes>
           </main>
