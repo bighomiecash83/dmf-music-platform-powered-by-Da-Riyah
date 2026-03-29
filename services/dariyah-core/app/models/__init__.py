@@ -7,6 +7,7 @@ from app.models.royalty import RoyaltySettlement
 from app.models.event import PlatformEvent
 from app.models.campaign import Campaign
 from app.models.api_key import ApiKey
+from app.models.dsp_metric import DspMetric
 
 __all__ = [
     "Base",
@@ -19,4 +20,5 @@ __all__ = [
     "PlatformEvent",
     "Campaign",
     "ApiKey",
+    "DspMetric",
 ]

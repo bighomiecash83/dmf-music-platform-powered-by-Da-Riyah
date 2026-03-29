@@ -34,6 +34,7 @@ ALL_MODELS = {**CLAUDE_MODELS, **GEMINI_MODELS}
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import RequestIDMiddleware, TimingMiddleware, TenantMiddleware
 from app.core.security import generate_api_key, hash_api_key
+from app.routers import api_router
 
 configure_logging(
     log_level=os.getenv("LOG_LEVEL", "INFO"),
@@ -59,6 +60,9 @@ app.add_middleware(
 app.add_middleware(TenantMiddleware)
 app.add_middleware(TimingMiddleware)
 app.add_middleware(RequestIDMiddleware)
+
+# ── DB-backed routers (v2) — coexist with legacy in-memory endpoints ─────────
+app.include_router(api_router, prefix="/v2")
 
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN", "dev_admin_token")
 

@@ -19,9 +19,13 @@ cryptography>=42.0.0
 # AI providers (optional — comment out if not using)
 anthropic>=0.29.0
 openai>=1.35.0
+google-genai>=1.0.0
 
 # Logging
 structlog>=24.2.0
+
+# Monitoring
+flower>=2.0.0
 
 # Dev / testing
 pytest>=8.2.0
