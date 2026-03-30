@@ -1,0 +1,60 @@
+name: Build & Push Containers to ECR (API + Payment)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: api
+            context: src/api
+            dockerfile: src/api/Dockerfile
+            ecr_repo: dmf-api
+            port: "8080"
+
+          - name: payment-service
+            context: services/payment-service
+            dockerfile: services/payment-service/Dockerfile
+            ecr_repo: dmf-payment-service
+            port: "8080"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          echo "Building ${{ matrix.name }}"
+          echo "Context: ${{ matrix.context }}"
+          echo "Dockerfile: ${{ matrix.dockerfile }}"
+          docker build -f "${{ matrix.dockerfile }}" -t "${{ matrix.ecr_repo }}:${IMAGE_TAG}" "${{ matrix.context }}"
+          docker tag "${{ matrix.ecr_repo }}:${IMAGE_TAG}" "${ECR_REGISTRY}/${{ matrix.ecr_repo }}:${IMAGE_TAG}"
+          docker tag "${{ matrix.ecr_repo }}:${IMAGE_TAG}" "${ECR_REGISTRY}/${{ matrix.ecr_repo }}:latest"
+          docker push "${ECR_REGISTRY}/${{ matrix.ecr_repo }}:${IMAGE_TAG}"
+          docker push "${ECR_REGISTRY}/${{ matrix.ecr_repo }}:latest"
