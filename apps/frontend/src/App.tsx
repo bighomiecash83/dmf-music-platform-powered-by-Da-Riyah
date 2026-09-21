@@ -34,8 +34,15 @@ const NAV_ITEMS = [
 function Sidebar() {
   return (
     <aside className="w-60 shrink-0 bg-gray-900 min-h-screen flex flex-col">
-      <div className="px-6 py-5 border-b border-gray-800">
-        <span className="text-white font-bold text-lg tracking-tight">DMF Platform</span>
+      <div className="px-4 py-4 border-b border-gray-800 flex flex-col items-center">
+        <img
+          src="/logo.png"
+          alt="DMF Records"
+          className="h-20 w-20 object-contain mb-2 drop-shadow-lg"
+          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+        />
+        <span className="text-white font-bold text-sm tracking-tight leading-none">DMF Records</span>
+        <span className="text-gray-500 text-xs mt-0.5">Fly Hoolie ENT Co.</span>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -69,7 +76,11 @@ export default function App() {
       <BrowserRouter>
         <div className="flex min-h-screen bg-gray-50">
           <Sidebar />
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto relative">
+            {/* DMF logo watermark in background */}
+            <div className="pointer-events-none fixed bottom-6 right-6 opacity-[0.04] select-none z-0">
+              <img src="/logo.png" alt="" className="h-48 w-48 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            </div>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
