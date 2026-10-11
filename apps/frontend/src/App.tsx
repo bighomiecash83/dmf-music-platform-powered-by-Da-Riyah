@@ -34,15 +34,20 @@ const NAV_ITEMS = [
 function Sidebar() {
   return (
     <aside className="w-60 shrink-0 bg-gray-900 min-h-screen flex flex-col">
-      <div className="px-4 py-4 border-b border-gray-800 flex flex-col items-center">
-        <img
-          src="/logo.png"
-          alt="DMF Records"
-          className="h-20 w-20 object-contain mb-2 drop-shadow-lg"
-          onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
-        />
-        <span className="text-white font-bold text-sm tracking-tight leading-none">DMF Records</span>
-        <span className="text-gray-500 text-xs mt-0.5">Fly Hoolie ENT Co.</span>
+      <div className="px-4 py-5 border-b border-gray-800 flex flex-col items-center">
+        <div className="relative mb-2">
+          <img
+            src="/logo.png"
+            alt="DMF Records"
+            className="h-28 w-28 object-contain relative z-10"
+            style={{ filter: 'drop-shadow(0 0 18px rgba(212,175,55,0.45))' }}
+            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+          />
+          {/* gold glow ring behind logo */}
+          <div className="absolute inset-0 rounded-full bg-yellow-500/10 blur-xl z-0" />
+        </div>
+        <span className="text-white font-bold text-sm tracking-widest uppercase leading-none">DMF Records</span>
+        <span className="text-yellow-600/70 text-xs mt-0.5 tracking-wide">Fly Hoolie ENT Co.</span>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
@@ -63,8 +68,9 @@ function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <div className="px-6 py-4 border-t border-gray-800">
-        <p className="text-xs text-gray-500">Powered by Da'Riyah</p>
+      <div className="px-4 py-4 border-t border-gray-800 flex flex-col items-center gap-1">
+        <p className="text-xs text-gray-600">est. 2009 · Columbus, Ohio</p>
+        <p className="text-xs text-yellow-600/50 font-medium">Powered by Da'Riyah AI</p>
       </div>
     </aside>
   )
@@ -77,9 +83,23 @@ export default function App() {
         <div className="flex min-h-screen bg-gray-50">
           <Sidebar />
           <main className="flex-1 overflow-auto relative">
-            {/* DMF logo watermark in background */}
-            <div className="pointer-events-none fixed bottom-6 right-6 opacity-[0.04] select-none z-0">
-              <img src="/logo.png" alt="" className="h-48 w-48 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+            {/* DMF logo — large centered background watermark on every page */}
+            <div
+              className="pointer-events-none select-none fixed inset-0 flex items-center justify-center z-0"
+              style={{ left: 240 }}
+            >
+              <img
+                src="/logo.png"
+                alt=""
+                className="object-contain"
+                style={{
+                  width: 520,
+                  height: 520,
+                  opacity: 0.045,
+                  filter: 'sepia(1) saturate(3) hue-rotate(5deg) brightness(0.9)',
+                }}
+                onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+              />
             </div>
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
