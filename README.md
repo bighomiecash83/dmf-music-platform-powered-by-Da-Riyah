@@ -1,58 +1,55 @@
-# repo/
-# ├─ README.md
-# ├─ docker-compose.yml
-# ├─ .env.example
-# ├─ apps/
-# │  └─ frontend/...
-# ├─ libs/
-# │  └─ security/...
-# └─ services/
-#    ├─ dariyah-core/...
-#    └─ streamgod-presenceos/...
+# Welcome to your Lovable project
 
-# =========================
-# README.md
-# =========================
-"""
-# Da'Riyah Monorepo (Scaffold)
+## Project info
 
-## Services
-- `services/dariyah-core`: Da'Riyah Core (Strategy/Music/Video/Distribution/Learning/Build stubs)
-- `services/streamgod-presenceos`: StreamGod (PresenceOS) (campaign exec/bot runtime/live DSP stubs)
-- `libs/security`: API Wall (API key hashing, signature verification, replay guard, scope enforcement)
+**Live App URL:** [dmf-music-platform-dariyah.lovable.app](https://dmf-music-platform-dariyah.lovable.app)
+**Lovable Project Console:** https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
 
-## Quickstart (Docker)
-1) Copy env:
-   - `cp .env.example .env`
+## How can I edit this code?
 
-2) Start:
-   - `docker compose up --build`
+There are several ways of editing your application.
 
-## API Wall (Client Requirements)
-Every request must include:
-- `X-Api-Key`: `dgk_<key_id>_<raw_key_material>`
-- `X-Timestamp`: unix seconds (int)
-- `X-Nonce`: random unique string (uuid recommended)
-- `X-Signature`: hex HMAC-SHA256 signature
+**Use Lovable**
 
-Signature input:
-`{timestamp}.{nonce}.{method}.{path}.{body_sha256}`
+Simply visit your [Lovable Project Console](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
 
-Signature key:
-- service-side stored `api_secret` tied to key_id
+Changes made via Lovable will be committed automatically to this repo.
 
-Body hash:
-- SHA256 hex of raw body bytes (empty body => SHA256 of empty bytes)
+**Use your preferred IDE**
 
-## Create an API key (dev/admin)
-- `POST /admin/api-keys` with header:
-  - `X-Admin-Token: <ADMIN_TOKEN>`
-- Response includes the raw API key **once**.
+To work locally:
 
-## Example curl (Core)
-1) Create key:
-```bash
-curl -s -X POST http://localhost:8001/admin/api-keys \
-  -H "X-Admin-Token: dev_admin_token" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"local-dev","scopes":["campaigns:read","campaigns:write","analytics:read"]}'
+```sh
+git clone https://github.com/bighomiecash83/dmf-music-platform-powered-by-Da-Riyah.git
+cd dmf-music-platform-powered-by-Da-Riyah
+npm i
+npm run dev
+```
+
+**Edit a file directly in GitHub**
+
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon).
+- Commit your changes.
+
+**Use GitHub Codespaces**
+- Click the "Code" button in your repository, select "Codespaces", and launch a new Codespace.
+
+## Technologies
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## Deployment
+
+Open your [Lovable Project Console](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID), click `Share -> Publish`, and your app will be available at  
+➡️ [dmf-music-platform-dariyah.lovable.app](https://dmf-music-platform-dariyah.lovable.app)
+
+## Custom Domain
+
+Go to Project > Settings > Domains in Lovable to connect a custom domain.
+
+[Read more](https://docs.lovable.dev/features/custom-domain#custom-domain)

@@ -1,0 +1,110 @@
+# Render.com — full-stack DMF deployment
+# https://render.com/docs/yaml-spec
+# Deploy with: connect repo → Render auto-detects this file
+
+services:
+
+  # ── API (dariyah-core) ────────────────────────────────────────────────────
+  - type: web
+    name: dariyah-core
+    runtime: python
+    region: oregon
+    plan: starter
+    rootDir: services/dariyah-core
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dmf-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: anthropic
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ENVIRONMENT
+        value: production
+
+  # ── Celery Worker ──────────────────────────────────────────────────────────
+  - type: worker
+    name: dmf-worker
+    runtime: python
+    region: oregon
+    plan: starter
+    rootDir: services/dariyah-core
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dmf-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: anthropic
+
+  # ── StreamGod PresenceOS ───────────────────────────────────────────────────
+  - type: web
+    name: streamgod-presenceos
+    runtime: node
+    region: oregon
+    plan: starter
+    rootDir: services/streamgod-presenceos
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: dmf-redis
+          type: redis
+          property: connectionString
+
+databases:
+
+  - name: dmf-postgres
+    plan: starter
+    region: oregon
+    databaseName: dmf
+    user: dmf
+
+  - name: dmf-redis
+    plan: starter
+    region: oregon

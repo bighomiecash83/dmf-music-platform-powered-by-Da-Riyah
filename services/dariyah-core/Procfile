@@ -1,0 +1,4 @@
+web: uvicorn main:app --host 0.0.0.0 --port $PORT --workers 2
+worker: celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai
+beat: celery -A app.workers.dsp_sync_worker.celery_app beat --loglevel=info
+release: alembic upgrade head
