@@ -55,7 +55,7 @@ services:
     plan: starter
     rootDir: services/dariyah-core
     buildCommand: pip install -r requirements.txt
-    startCommand: celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai
+    startCommand: celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai,visual
     envVars:
       - key: DATABASE_URL
         fromDatabase:

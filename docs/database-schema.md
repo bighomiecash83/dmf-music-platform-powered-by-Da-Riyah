@@ -191,6 +191,28 @@ Immutable event log. **Never update or delete rows.**
 | is_active    | BOOLEAN      | Key enabled/disabled               |
 | last_used_at | TIMESTAMPTZ  | Last API call timestamp            |
 
+### Da'Riyah Studio — Visual Engine
+
+Scoped to a project rather than directly to `org_id` (the project row carries
+the tenant reference). See [`docs/architecture.md`](architecture.md) for the
+full workflow.
+
+| Table                | Purpose                                                         |
+|----------------------|------------------------------------------------------------------|
+| `visual_projects`    | Top-level creative workspace; optionally linked to an `artist`/`release` |
+| `visual_scenes`      | Ordered narrative sections of a project                          |
+| `visual_shots`       | Individual camera shots within a scene                           |
+| `visual_prompts`     | Generation prompts attached to a shot                             |
+| `visual_assets`      | Uploaded or generated media (images, audio, video, character refs) |
+| `visual_generations` | Individual generation jobs (`image_to_video`, `text_to_video`, ...) |
+| `visual_timelines`   | Arrangement of shots synced to a song's beat markers              |
+| `visual_renders`     | Final render jobs producing publishable video output              |
+| `visual_versions`    | Project snapshots, one per render                                 |
+
+`visual_generations.status` and `visual_renders.status` include a
+`queued_no_provider` state — reached when no video-gen vendor is configured,
+so the job record and graph stay intact until one is wired in.
+
 ## Per-Stream Rate Schedule (2026)
 
 | DSP          | Rate/Stream (USD) |

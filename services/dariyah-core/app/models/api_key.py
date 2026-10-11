@@ -2,9 +2,10 @@
 ApiKey — stores hashed API keys with scope definitions.
 Never store raw key material — only hash(key).
 """
-from sqlalchemy import String, ForeignKey, Boolean, JSON
+from datetime import datetime
+
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from typing import Any
 
 from app.models.base import Base, TimestampMixin, new_uuid
 
@@ -20,7 +21,7 @@ class ApiKey(Base, TimestampMixin):
     key_hash: Mapped[str] = mapped_column(String(64), nullable=False)              # sha256(raw_key)
     scopes: Mapped[list[str]] = mapped_column(JSON, default=list)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    last_used_at: Mapped[Any] = mapped_column(nullable=True)
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     org: Mapped["Org"] = relationship("Org", back_populates="api_keys")  # noqa: F821
 

@@ -185,7 +185,7 @@ resource "aws_ecs_task_definition" "worker" {
     command = [
       "celery", "-A", "app.workers.dsp_sync_worker.celery_app",
       "worker", "--loglevel=info", "--concurrency=4",
-      "--queues=dsp,royalty,ai"
+      "--queues=dsp,royalty,ai,visual"
     ]
 
     environment = [

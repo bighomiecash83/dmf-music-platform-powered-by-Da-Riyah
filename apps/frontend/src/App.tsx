@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
-  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles, MessageSquare,
+  LayoutDashboard, Users, Music, DollarSign, Radio, BarChart2, Sparkles, MessageSquare, Film,
 } from 'lucide-react'
 import { clsx } from 'clsx'
 
@@ -13,6 +13,7 @@ import CampaignsPage from '@/features/campaigns/CampaignsPage'
 import AnalyticsPage from '@/features/analytics/AnalyticsPage'
 import AIPage from '@/features/ai/AIPage'
 import DaRiyahPage from '@/features/dariyah/DaRiyahPage'
+import DariyahStudioPage from '@/features/dariyah-studio/DariyahStudioPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { to: '/campaigns', label: 'Campaigns', icon: Radio },
   { to: '/analytics', label: 'Analytics', icon: BarChart2 },
   { to: '/ai', label: 'AI Tools', icon: Sparkles },
+  { to: '/dariyah-studio', label: "Da'Riyah Studio", icon: Film },
 ]
 
 function Sidebar() {
@@ -98,6 +100,7 @@ export default function App() {
               <Route path="/campaigns" element={<CampaignsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/ai" element={<AIPage />} />
+              <Route path="/dariyah-studio" element={<DariyahStudioPage />} />
               <Route path="/dariyah" element={<DaRiyahPage />} />
             </Routes>
           </main>

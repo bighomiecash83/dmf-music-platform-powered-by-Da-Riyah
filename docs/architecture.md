@@ -62,6 +62,42 @@
 - **CI/CD**: GitHub Actions (lint, test, build, Docker image, deploy)
 - **Deployment**: Railway (backend) + Vercel (frontend)
 
+## Da'Riyah Studio — AI Visual Engine
+
+Da'Riyah Studio turns a photo, a song, and a vision into a synced, cinematic
+music video. It's a full creative workspace, not a single "generate video"
+button: upload a photo + a song, describe the vision, build scenes, arrange
+them against the beat, generate shots, then render.
+
+```
+project -> scene-builder -> storyboard -> generate -> audio-sync -> render
+```
+
+- **API**: `app/routers/visual_engine.py`, mounted at `/v2/dariyah-studio`
+  (projects, scene-builder, storyboard, character-consistency, audio-sync,
+  generate, render).
+- **Data model**: `app/models/visual.py` — `visual_projects`, `visual_scenes`,
+  `visual_shots`, `visual_prompts`, `visual_assets`, `visual_generations`,
+  `visual_timelines`, `visual_renders`, `visual_versions` (see
+  [`docs/database-schema.md`](database-schema.md)).
+- **Background jobs**: `app/workers/visual_worker.py`, on the `visual` Celery
+  queue (see below) — `process_generation` runs image-to-video / text-to-video
+  jobs, `process_render` bakes a timeline into a final video. Both fall back
+  to a `queued_no_provider` status when no vendor URL is configured
+  (`DARIYAH_IMAGE_TO_VIDEO_PROVIDER_URL`, `DARIYAH_TEXT_TO_VIDEO_PROVIDER_URL`,
+  `DARIYAH_RENDER_PROVIDER_URL`), so the job graph stays intact until a
+  provider is wired in.
+- **Frontend**: `apps/frontend/src/features/dariyah-studio/DariyahStudioPage.tsx`,
+  at `/dariyah-studio`.
+
+Note: "Da'Riyah" is also the name of the label-intelligence chat assistant
+(`/dariyah` — `main.py`'s `/dariyah/chat` + `/dariyah/models`, and
+`features/dariyah/DaRiyahPage.tsx`). They're two distinct features sharing a
+brand name — the chat assistant and the visual-generation studio — kept on
+separate routes (`/dariyah` vs. `/dariyah-studio`) and separate table
+namespaces (no tables backing the chat; `visual_*` for the studio) to avoid
+collisions.
+
 ## Background Worker System
 
 All compute-intensive operations run **outside the HTTP request lifecycle** via Celery:
@@ -71,6 +107,7 @@ All compute-intensive operations run **outside the HTTP request lifecycle** via 
 | `dsp`    | `dsp_sync_worker`   | Pull metrics from Spotify, Apple Music, Amazon, Tidal |
 | `royalty`| `royalty_worker`    | Calculate splits, generate settlement records         |
 | `ai`     | `ai_worker`         | Description generation, campaign copy, insights       |
+| `visual` | `visual_worker`     | Da'Riyah Studio image/text-to-video generation, render |
 
 ### Celery Beat Schedule
 - **DSP Bulk Sync**: Every 6 hours — pulls metrics for all orgs/artists

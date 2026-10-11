@@ -138,7 +138,7 @@ echo "  Deploying Celery worker..."
 (
   cd services/dariyah-core
   railway up --service "dmf-worker" --start-command \
-    "celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai"
+    "celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai,visual"
 )
 ok "Worker deployed"
 

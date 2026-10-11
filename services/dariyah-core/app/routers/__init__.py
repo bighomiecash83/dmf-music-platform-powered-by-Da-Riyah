@@ -9,6 +9,7 @@ from app.routers.analytics import router as analytics_router
 from app.routers.dsp import router as dsp_router
 from app.routers.ai_tools import router as ai_router
 from app.routers.dashboard import router as dashboard_router
+from app.routers.visual_engine import router as visual_engine_router
 
 api_router = APIRouter()
 
@@ -21,3 +22,4 @@ api_router.include_router(campaigns_router, prefix="/campaigns", tags=["campaign
 api_router.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
 api_router.include_router(dsp_router, prefix="/dsp", tags=["dsp"])
 api_router.include_router(ai_router, prefix="/ai", tags=["ai"])
+api_router.include_router(visual_engine_router, prefix="/dariyah-studio", tags=["dariyah-studio"])

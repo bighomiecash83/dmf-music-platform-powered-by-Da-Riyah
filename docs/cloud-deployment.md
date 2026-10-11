@@ -43,7 +43,7 @@
 **Worker service:**
 - Add a second Railway service from the same repo
 - Root dir: `services/dariyah-core`
-- Start command: `celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai`
+- Start command: `celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --concurrency=2 --queues=dsp,royalty,ai,visual`
 
 ---
 
@@ -100,7 +100,7 @@ alembic upgrade head
 uvicorn main:app --reload --port 8001
 
 # Workers (separate terminal)
-celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --queues=dsp,royalty,ai
+celery -A app.workers.dsp_sync_worker.celery_app worker --loglevel=info --queues=dsp,royalty,ai,visual
 
 # Frontend (separate terminal)
 cd apps/frontend
