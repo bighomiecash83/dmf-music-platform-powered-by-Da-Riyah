@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMF Records — Workshop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.png" alt="DMF" onerror="this.style.display='none'">
+      <span>DMF Records</span>
+    </div>
+    <div class="nav">
+      <a href="index.html"    class="nav-item"><span class="nav-icon">👥</span> Roster</a>
+      <a href="studio.html"   class="nav-item"><span class="nav-icon">🎛️</span> Studio</a>
+      <a href="video.html"    class="nav-item"><span class="nav-icon">🎬</span> Video</a>
+      <a href="workshop.html" class="nav-item active"><span class="nav-icon">🔧</span> Workshop</a>
+    </div>
+    <div style="padding:12px 16px;font-size:11px;color:var(--muted)">
+      Fly Hoolie ENT Co.<br>est. 2009 · Columbus, OH
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Workshop</div>
+        <div class="topbar-sub">Code, data, migrations &amp; scripts</div>
+      </div>
+      <div class="flex gap-2">
+        <select id="filter-type" onchange="loadItems()" class="btn btn-outline btn-sm" style="padding:5px 10px">
+          <option value="">All types</option>
+          <option value="code">Code</option>
+          <option value="data">Data</option>
+          <option value="migration">Migration</option>
+          <option value="script">Script</option>
+          <option value="template">Template</option>
+          <option value="note">Note</option>
+        </select>
+        <button class="btn btn-gold btn-sm" onclick="showNew()">+ New Item</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="items-grid" class="grid grid-3">
+        <div class="card" style="grid-column:1/-1;text-align:center;padding:48px;color:var(--muted)">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Editor modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:flex-start;justify-content:center;padding-top:48px;overflow-y:auto" hidden>
+  <div class="card" style="width:640px;max-width:94vw;margin-bottom:48px">
+    <div class="card-title" id="m-heading">New Workshop Item</div>
+    <input type="hidden" id="m-id">
+    <div class="grid grid-2">
+      <div class="field"><label>Title</label><input id="m-title" placeholder="Item title"></div>
+      <div class="field"><label>Type</label>
+        <select id="m-type">
+          <option value="code">Code</option>
+          <option value="data">Data</option>
+          <option value="migration">Migration</option>
+          <option value="script">Script</option>
+          <option value="template">Template</option>
+          <option value="note">Note</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Artist ID (optional)</label><input id="m-artist" placeholder="bhc-001"></div>
+    <div class="field"><label>Tags (comma-separated)</label><input id="m-tags" placeholder="isrc, sql, release"></div>
+    <div class="field"><label>Content</label><textarea id="m-content" style="min-height:160px;font-family:monospace" placeholder="Paste your code, SQL, notes…"></textarea></div>
+    <div class="field"><label>Status</label>
+      <select id="m-status">
+        <option value="draft">Draft</option>
+        <option value="in_progress">In Progress</option>
+        <option value="review">Review</option>
+        <option value="complete">Complete</option>
+        <option value="archived">Archived</option>
+      </select>
+    </div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-primary" onclick="saveItem()">Save</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="m-delete" style="margin-left:auto" onclick="deleteItem()" hidden>Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+<script src="workshop.js"></script>
+</body>
+</html>

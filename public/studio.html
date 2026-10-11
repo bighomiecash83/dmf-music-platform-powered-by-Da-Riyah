@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMF Records — Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <img src="logo.png" alt="DMF" onerror="this.style.display='none'">
+      <span>DMF Records</span>
+    </div>
+    <div class="nav">
+      <a href="index.html"    class="nav-item"><span class="nav-icon">👥</span> Roster</a>
+      <a href="studio.html"   class="nav-item active"><span class="nav-icon">🎛️</span> Studio</a>
+      <a href="video.html"    class="nav-item"><span class="nav-icon">🎬</span> Video</a>
+      <a href="workshop.html" class="nav-item"><span class="nav-icon">🔧</span> Workshop</a>
+    </div>
+    <div style="padding:12px 16px;font-size:11px;color:var(--muted)">
+      Fly Hoolie ENT Co.<br>est. 2009 · Columbus, OH
+    </div>
+  </nav>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Studio Sessions</div>
+        <div class="topbar-sub">Audio mixing &amp; mastering pipeline</div>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="showNewSession()">+ New Session</button>
+    </div>
+
+    <div class="content">
+      <div class="grid grid-4 mb-2">
+        <div class="card stat"><div class="stat-val" id="s-total">—</div><div class="stat-lbl">Sessions</div></div>
+        <div class="card stat"><div class="stat-val" id="s-active">—</div><div class="stat-lbl">Active</div></div>
+        <div class="card stat"><div class="stat-val" id="s-ready">—</div><div class="stat-lbl">Ready</div></div>
+        <div class="card stat"><div class="stat-val" id="s-delivered">—</div><div class="stat-lbl">Delivered</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">All Sessions</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Title</th><th>Artist</th><th>Tracks</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="sessions-body">
+              <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--muted)">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New session modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;align-items:center;justify-content:center" hidden>
+  <div class="card" style="width:420px;max-width:90vw">
+    <div class="card-title">New Studio Session</div>
+    <div class="field"><label>Artist ID</label><input id="m-artist" placeholder="bhc-001"></div>
+    <div class="field"><label>Title</label><input id="m-title" placeholder="Session title"></div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-primary" onclick="createSession()">Create</button>
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+<script src="studio.js"></script>
+</body>
+</html>

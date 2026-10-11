@@ -1,0 +1,16 @@
+{
+  "name": "dmf-distribution-engine",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DMF Records Fly Hoolie ENT Co. — Distribution Engine",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test 'src/**/*.test.js'",
+    "lint": "node --check server.js src/**/*.js"
+  },
+  "engines": { "node": ">=20.0.0" },
+  "author": "Deangelo Jackson (Big Homie Cash) <bighomiecash8346@gmail.com>",
+  "license": "UNLICENSED"
+}
