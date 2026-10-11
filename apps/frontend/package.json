@@ -2,13 +2,18 @@
   "name": "dmf-frontend",
   "version": "1.0.0",
   "private": true,
+  "main": "electron/main.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 3000",
+    "start": "vite --port 3000",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .ts,.tsx --report-unused-disable-directives",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "electron": "cross-env NODE_ENV=development electron electron/main.js",
+    "electron:build": "npm run build && electron-builder --dir",
+    "electron:pack": "npm run build && electron-builder"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -33,10 +38,34 @@
     "@testing-library/react": "^16.0.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.8",
     "jsdom": "^24.1.1",
     "vitest": "^2.0.3"
+  },
+  "build": {
+    "appId": "com.dmfrecords.platform",
+    "productName": "DMF Records Platform",
+    "copyright": "© 2026 DMF Records Fly Hoolie ENT Co.",
+    "directories": { "output": "dist-electron" },
+    "files": ["dist/**/*", "electron/**/*", "public/**/*"],
+    "icon": "public/logo.png",
+    "mac": {
+      "category": "public.app-category.music",
+      "darkModeSupport": true,
+      "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }]
+    },
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "publisherName": "DMF Records Fly Hoolie ENT Co."
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Music"
+    }
   }
 }
